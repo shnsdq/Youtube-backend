@@ -4,6 +4,13 @@ import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+const generateAccessAndRefreshTokens = async(userId)=>{
+   try{
+      const user = await User.findById(userId)
+   }catch(error){
+      throw new ApiError(500,"Something went wrong while generating refresh and access token")
+   }
+}
 
 const registerUser = asyncHandler( async(req,res)=>{
     // get user details from frontend
@@ -88,6 +95,16 @@ const loginUser = asyncHandler( async(req,res)=> {
    const user = await User.findOne({
       $or: [{username},{email}]
    })
+
+   if(!user){
+      throw new ApiError(404,"User doesnot exist")
+   }
+
+   const isPasswordValid = await user.isPasswordCorrect(password)
+
+   if(!isPasswordValid){
+      throw new ApiError(401,"Invalid user credentials")
+   }
 
 
 })
