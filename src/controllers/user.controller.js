@@ -231,7 +231,7 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
 const getCurrentUser = asyncHandler(async(req,res)=>{
    return res
    .status(200)
-   .json(200, req.user, "current user fetched successfully")
+   .json(new ApiResponse(200, req.user, "current user fetched successfully"))
 }) 
 
 const updateAccountDetails = asyncHandler(async(req,res)=>{
@@ -313,6 +313,38 @@ const updateUserCoverImage = asyncHandler(async(req,res)=>{
    .json(new ApiResponse(200, user, "Cover Image updated successfully"))
 })
 
+const getUserChannelProfile = asyncHandler(async (req,res) => {
+   const {username} = req.params
+
+   if(!username?.trim()){
+      throw new ApiError(400,"username is missing")
+   }
+
+   const  channel = await User.aggregate([
+      {
+         $match:{
+            username:username?.toLowerCase()
+         }
+      },
+      {
+         $lookup:{
+            from:"subscriptions", //howmany have subscribed chaicode
+            localField:"_id",
+            foreignField:"channel",
+            as:"subscribers"
+         }
+      },
+      {
+         $lookup:{
+            from:"subscriptions", //howmany has chaicode subscribedto
+            localField:"_id",
+            foreignField:"subscriber",
+            as:"subscribedTo"
+         }
+      }
+   ])
+
+   })
 export {
    registerUser,
    loginUser,
